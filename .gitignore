@@ -1,0 +1,7 @@
+Assets/**
+.vs/**
+.vscode/**
+Temp/**
+Logs/**
+Library/**
+UserSettings/**
