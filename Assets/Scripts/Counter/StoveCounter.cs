@@ -58,7 +58,6 @@ public class StoveCounter : BaseCounter,IProgressBarDisplay
             InvokeProgressBarEvent(0);
             player.GetKitchenObject().SetKitchenObjectParent(this);
             currentRecipe = GetAvailableRecipe();
-            Debug.Log(currentRecipe);
         } else if (!player.HasKitchenObject() && HasKitchenObject()) {
             // give object to player
             cookingProgress = 0;

@@ -18,7 +18,5 @@ public class ProgressBarUI : MonoBehaviour
     private void HandleProgress(object sender,IProgressBarDisplay.ProgressBarArgs args){
         imageBar.fillAmount = args.progress;
     }
-    public void LateUpdate(){
-        transform.forward = Camera.main.transform.forward;
-    }
+    
 }

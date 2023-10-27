@@ -27,7 +27,6 @@ public class CuttingCounter : BaseCounter,IProgressBarDisplay
     public override void Use(Player player)
     {
         RecipeSO recipe = GetAvailableRecipe();
-        Debug.Log(kitchenObject);
         if (!recipe) return;
         cuttingProgress ++;
         OnCutting?.Invoke(this,EventArgs.Empty);
