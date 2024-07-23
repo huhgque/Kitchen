@@ -15,14 +15,15 @@ public class WaitingOrderUI : MonoBehaviour
     }
     private void OnAddOrder(object sender,OrderManager.OnOrderChangeArgs args){
         OrderIconUI inst = Instantiate(orderIconUITemplate,transform);
-        inst.AddRecipe(args.recipe);
+        inst.AddRecipe(args.order.GetHoldingRecipe());
         inst.transform.localPosition = orderSpacing * orderIconUIInstances.Count;
         inst.gameObject.SetActive(true);
+        inst.refObject = args.order;
         orderIconUIInstances.Add(inst);
     }
     private void OnCompleteOrder(object sender,OrderManager.OnOrderChangeArgs args){
         foreach (OrderIconUI iconInst in orderIconUIInstances){
-            if (iconInst.recipe == args.recipe){
+            if (iconInst.refObject == args.order){
                 orderIconUIInstances.Remove(iconInst);
                 Destroy(iconInst.gameObject);
                 UpdateIconPosition();

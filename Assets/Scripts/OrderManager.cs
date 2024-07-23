@@ -9,39 +9,48 @@ public class OrderManager : MonoBehaviour
     public event EventHandler<OnOrderChangeArgs> OnFetchOrder;
     public event EventHandler<OnOrderChangeArgs> OnOrderComplete;
     public class OnOrderChangeArgs:EventArgs{
-        public RecipeSO recipe;
+        public WaitingOrderObject order;
     }
     public static OrderManager Instance {get; private set; }
     [SerializeField] private List<RecipeSO> recipelist;
-    private List<RecipeSO> waitingOrder = new();
-
+    [SerializeField] float waitTimePerIngredient = 5f;
+    [SerializeField] WaitingOrderObject waitingOrderObjectTemplate;
+    List<WaitingOrderObject> waitingOrderObjects= new();
+    public float GetWaitTimePerIngredient() {return waitTimePerIngredient;}
     private float fetchOrderCounter = 0f;
     private float fetchOrderColdown = 4f;
-    private int maxOrder = 4;
+    [SerializeField] private int maxOrder = 1;
+    int completedOrder = 0;
     private void Awake() {
         Instance = this;
     }
     private void Update() {
-        if (waitingOrder.Count >= maxOrder) return;
+        if (!GameManager.Instance.IsGamePlaying()) return;
+        if (waitingOrderObjects.Count >= maxOrder) return;
         fetchOrderCounter += Time.deltaTime;
         if (fetchOrderCounter > fetchOrderColdown){
             fetchOrderCounter = 0;
             RecipeSO recipe = recipelist[ UnityEngine.Random.Range(0,recipelist.Count) ];
-            waitingOrder.Add(recipe);
-            OnFetchOrder?.Invoke(this,new OnOrderChangeArgs{recipe = recipe});
+            WaitingOrderObject waitingOrderObject = Instantiate(waitingOrderObjectTemplate);
+            waitingOrderObject.SetHoldingRecipe(recipe);
+            waitingOrderObject.transform.parent = this.gameObject.transform;
+            waitingOrderObject.SetStartCountDown(true);
+            waitingOrderObject.OnRecipeExpire += OnOrderExpire;
+            waitingOrderObjects.Add(waitingOrderObject);
+            OnFetchOrder?.Invoke(this,new OnOrderChangeArgs{order = waitingOrderObject});
         }
     }
 
     public bool CheckSubmitItem(List<KitchenSO> ingredient){
-        foreach (RecipeSO recipe in recipelist){
+        foreach (WaitingOrderObject order in waitingOrderObjects){
             // if ingredient has the same amount of things as recipe
-            if (recipe.GetInput().Count == ingredient.Count){
+            if (order.GetHoldingRecipe().GetInput().Count == ingredient.Count){
                 // clone ingredient for easier validating
                 // if ingredient has thing that recipe require, remove it from ingredient then continue
                 // else break loop
                 bool isCorrectIngredient = true;
                 List<KitchenSO> checkingIngredient = new(ingredient);
-                foreach (KitchenSO item in recipe.GetInput())
+                foreach (KitchenSO item in order.GetHoldingRecipe().GetInput())
                 {
                     if (checkingIngredient.Contains(item)){
                         checkingIngredient.Remove(item);
@@ -51,14 +60,26 @@ public class OrderManager : MonoBehaviour
                     }
                 }
                 if (isCorrectIngredient){
-                    OnOrderComplete?.Invoke(this,new OnOrderChangeArgs{recipe = recipe});
-                    waitingOrder.Remove(recipe);
+                    OnOrderComplete?.Invoke(this,new OnOrderChangeArgs{order = order});
+                    GameManager.Instance.AddBonusHeart(1);
+                    waitingOrderObjects.Remove(order);
+                    Debug.Log(waitingOrderObjects.Count);
+                    completedOrder++;
                     return true;
                 }
             }else{
                 continue;
             }
         }
+        
         return false;
+    }
+
+    private void OnOrderExpire(object sender, EventArgs e){
+        WaitingOrderObject order = (WaitingOrderObject) sender;
+        OnOrderComplete?.Invoke(this,new OnOrderChangeArgs{order = order});
+        GameManager.Instance.FailOrder();
+        waitingOrderObjects.Remove(order);
+        Destroy(order.gameObject);
     }
 }

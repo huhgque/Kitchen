@@ -1,17 +1,24 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class ClearCounter : BaseCounter
 {
+    public static event EventHandler OnAnyItemPlace;
+    
     public override void Interact(Player player)
     {
         if(player.HasKitchenObject() && HasKitchenObject()){
             if (TryAddPlayerPlate(player)){}
-            else if (TryAddSelfPlate(player)){}
+            else if (TryAddSelfPlate(player)){
+                OnAnyItemPlace?.Invoke(this,EventArgs.Empty);
+            }
         } else {
             if (TryGiveToPlayer(player)){}
-            else if (TryTakeFromPlayer(player)){}
+            else if (TryTakeFromPlayer(player)){
+                OnAnyItemPlace?.Invoke(this,EventArgs.Empty);
+            }
         }
     }
 

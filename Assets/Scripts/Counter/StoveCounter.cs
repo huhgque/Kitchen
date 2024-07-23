@@ -5,6 +5,8 @@ using UnityEngine;
 
 public class StoveCounter : BaseCounter,IProgressBarDisplay
 {
+    public static event EventHandler OnAnyStoveOn;
+    public static event EventHandler OnAnyStoveOff;
     public event EventHandler<OnStoveStateChangeArgs> OnStoveStateChange;
     public class OnStoveStateChangeArgs:EventArgs{
         public CookingState cookingState;
@@ -47,6 +49,7 @@ public class StoveCounter : BaseCounter,IProgressBarDisplay
                 break;
             case CookingState.BURNED:
                 OnStoveStateChange?.Invoke(this,new OnStoveStateChangeArgs{ cookingState = cookingState });
+                OnAnyStoveOff?.Invoke(this,EventArgs.Empty);
                 break;
         }
     }
@@ -65,6 +68,7 @@ public class StoveCounter : BaseCounter,IProgressBarDisplay
             InvokeProgressBarEvent(0);
             kitchenObject.SetKitchenObjectParent(player);
             OnStoveStateChange?.Invoke(this,new OnStoveStateChangeArgs{ cookingState = cookingState });
+            OnAnyStoveOff?.Invoke(this,EventArgs.Empty);
         }
     }
     public override void Use(Player player)
@@ -74,11 +78,13 @@ public class StoveCounter : BaseCounter,IProgressBarDisplay
                 if(!HasKitchenObject()) return;
                 cookingState = CookingState.COOKING;
                 OnStoveStateChange?.Invoke(this,new OnStoveStateChangeArgs{ cookingState = cookingState });
+                OnAnyStoveOn?.Invoke(this,EventArgs.Empty);
                 break;
             case CookingState.BURNED:
             case CookingState.COOKING:
                 cookingState = CookingState.IDLE;
                 OnStoveStateChange?.Invoke(this,new OnStoveStateChangeArgs{ cookingState = cookingState });
+                OnAnyStoveOff?.Invoke(this,EventArgs.Empty);
                 break;
         }
     }

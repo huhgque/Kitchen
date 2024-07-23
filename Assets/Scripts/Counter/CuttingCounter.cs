@@ -5,6 +5,7 @@ using UnityEngine;
 
 public class CuttingCounter : BaseCounter,IProgressBarDisplay
 {
+    public static event EventHandler OnAnyCutting;
     public event EventHandler OnCutting;
     public event EventHandler<IProgressBarDisplay.ProgressBarArgs> OnProgressBarChange;
 
@@ -31,6 +32,7 @@ public class CuttingCounter : BaseCounter,IProgressBarDisplay
         cuttingProgress ++;
         OnCutting?.Invoke(this,EventArgs.Empty);
         InvokeProgressBarEvent((float) cuttingProgress / recipe.GetProcessStep());
+        OnAnyCutting?.Invoke(this,EventArgs.Empty);
         if (cuttingProgress < recipe.GetProcessStep()) return;
         KitchenObject processedObject = Instantiate(recipe.GetOutput().prefab.gameObject).GetComponent<KitchenObject>();
         kitchenObject.BecomeProcessed(processedObject,this);

@@ -42,8 +42,10 @@ public class Player : MonoBehaviour , IKitchenObjectParent
     // Update is called once per frame
     void Update()
     {
-        HandleMovement();
-        HandleInteract();
+        if(GameManager.Instance.IsGamePlaying()){
+            HandleMovement();
+            HandleInteract();
+        }
     }
 
     public bool IsWalking(){
@@ -94,7 +96,8 @@ public class Player : MonoBehaviour , IKitchenObjectParent
             if(canMove)
                 transform.position += moveX * Time.deltaTime * speed;
         }
-        transform.forward = Vector3.Slerp(transform.forward, direction, Time.deltaTime * rotateSpeed);
+        Vector3 lookForwardLerp = Vector3.Slerp(transform.forward, direction, Time.deltaTime * rotateSpeed);
+        transform.forward = (lookForwardLerp != Vector3.zero) ? lookForwardLerp : transform.forward;
     }
 
     private void SetSelectedCounter(BaseCounter clearCounter){
